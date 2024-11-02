@@ -105,7 +105,7 @@ class Form {
         ; to become the container for our WebView2 Controller.
         g.Add('Text', Format('x0 y0 w{} h{} vwvController', w, h-this.pos.wv.offset.bottom))
         g['wvController'].wvc := this.wvc := WebView2.CreateControllerAsync(g['wvController'].hwnd).await2()
-        this.wv := g['wvController'].CoreWebView2
+        wv := this.wv := g['wvController'].wvc.CoreWebView2
         g['wvController'].nwr := wv.NewWindowRequested(_NewWindowRequestedHandler_)
         wv.Navigate(optPath.userForm)
 
