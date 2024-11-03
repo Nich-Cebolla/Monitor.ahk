@@ -1,5 +1,4 @@
-#Include cJson.ahk
-#Include cArray.ahk
+
 
 /* Credits
 Key details regarding DLL calls sourced from, or pulled directly from, these discussions:
@@ -260,7 +259,7 @@ class Monitor {
         Monitor.ToggleModes(&original, 'dpi', DPI_AWARENESS_CONTEXT)
         if IsSet(hmon) {
             if DllCall("Shcore\GetDpiForMonitor", (A_PtrSize = 4 ? 'Ptr' : 'UInt'), Number(hmon) < 100 ? Monitor[hmon]['hmon'] : Number(hmon) , "UInt", Monitor.Enum.MDT.DEFAULT, "UInt*", &dpiX := 0, "UInt*", &dpiY := 0, "UInt")
-                throw Error('GetDpiForMonitor failed. hmon: ' hmon '`r`n' JSON.Stringify(A_LastError,4), -1)
+                throw Error('GetDpiForMonitor failed. hmon: ' hmon '`r`n' Monitor._FormatError(A_LastError), -1)
         }
         Monitor.ToggleModes(, original)
         return outVar := Map('x', dpiX??Unset, 'y', dpiY??Unset, 'win', IsSet(hwnd) ? DllCall("User32\GetDpiForWindow", "Ptr", Number(hwnd), "UInt") : Unset)
@@ -410,7 +409,7 @@ class Monitor {
                 arr.Push(k), arr.Push(v)
             modes := arr
         } else if (Mod(modes.length, 2) != 0)
-            throw Error('There should be a single value for each mode. Here`'s your input:`r`n' modes.Join(1), -1)
+            throw Error('There should be a single value for each mode. Here`'s your input:`r`n' Monitor._Stringify(modes), -1)
         Loop modes.length / 2 {
             mode := StrLower(modes[A_Index * 2 - 1]), val := modes[A_Index * 2]
             switch mode {
@@ -608,7 +607,7 @@ class Monitor {
         str := 'One or more errors occured. Details:`r`n`r`n'
         for item in Monitor._errors {
             for k, v in item
-                str .= Format('hmon for which the error occurred: {1}`r`nError:`r`n{2}{3}', k, JSON.stringify(v,4), (A_Index = item.length ? '' : '`r`n`r`n'))
+                str .= Format('hmon for which the error occurred: {1}`r`nError:`r`n{2}{3}', k, Monitor._FormatError(v), (A_Index = item.length ? '' : '`r`n`r`n'))
         }
         g.Add('Edit', 'w800 vedit', str)
         g.Add('Button', 'w100', 'Copy').OnEvent('Click', _Copy_)
@@ -621,6 +620,67 @@ class Monitor {
             CoordMode('Mouse', initial)
         }
         g.Show('x200 y200')
+    }
+
+    static _Stringify(obj, delim := '`r`n') {
+        str := ''
+        switch type(obj) {
+            case 'Map', 'Object':
+                if type(obj) = 'Object'
+                    obj.DefineProp('__Enum', {Call: ((self, params*) => self.OwnProps())})
+                for k, v in obj {
+                    if IsObject(v)
+                        str .= Format('Key: {2}{1}Value: {3}{1}', delim, k, Monitor._Stringify(v))
+                    else {
+                        try
+                            str .= Format('Key: {2}{1}Value: {3}{1}', delim, k, String(v))
+                        catch
+                            str .= Format('Key: {2}{1}Value: Could not stringify value{1}', delim, k)
+                    }
+                }
+            case 'Array':
+                i := 0
+                for item in obj {
+                    i++
+                    if IsObject(item)
+                        str .= Format('Index: {2}{1}Value: {3}{1}', delim, i, Monitor._Stringify(item))
+                    else {
+                        try
+                            str .= Format('Index: {2}{1}Value: {3}{1}', delim, i, StrinG(item))
+                        catch
+                            str .= Format('Index: {2}{1}Value: Could not stringify value{1}', delim, i)
+                    }
+                }
+            default:
+                if obj.HasMethod('__Enum') {
+                    try {
+                        for k, v in obj {
+                            if IsObject(v)
+                                str .= Format('Key: {2}{1}Value: {3}{1}', delim, k, Monitor._Stringify(v))
+                            else {
+                                try
+                                    str .= Format('Key: {2}{1}Value: {3}{1}', delim, k, String(v))
+                                catch
+                                    str .= Format('Key: {2}{1}Value: Could not stringify value{1}', delim, k)
+                            }
+                        }
+                    } catch
+                        throw Error('Object does not have an ``__Enum`` method', -1)
+                }
+        }
+        return Trim(str, delim)
+    }
+
+    static _FormatError(err) {
+        extra := (err.Extra ? 'Extra: ' err.Extra '`n' : '')
+        return (
+            'Message: ' err.message '`n'
+            'What: ' err.What '`n'
+            extra
+            'File: ' err.File '`n'
+            'Line: ' err.Line '`n'
+            'Stack: ' err.Stack
+        )
     }
 
     class DataTypes {
@@ -637,6 +697,7 @@ class Monitor {
         static RectGet(rect) => Map('left', NumGet(rect, 0, 'Int'), 'top', NumGet(rect, 4, 'Int'), 'right', NumGet(rect, 8, 'Int'), 'bottom', NumGet(rect, 12, 'Int'))
     }
 }
+
 
 /* In progress, need to find a better way
 

@@ -16,11 +16,9 @@ Key details regarding DLL calls were sourced from or pulled directly from the fo
 ### Root directory
 `cMonitor.ahk` requires `cArray.ahk` and `cJSON.ahk`
 - cMonitor.ahk - The script containing the `Monitor` class.
-- cArray.ahk - Adds three instance methods to `Array.prototype`: `.Join()`, `.JoinObj()`, and `.IndexOf()`
-- cJSON.ahk - `JSON` class with these methods: `JSON.Stringify()`, `JSON.Parse()`, `JSON.SimpleClone()`, and `JSON.SimpleCloneToMap()`.
 ### Directory Example-WM_DPICHANGED
 Contains all files necessary to demonstrate implementing the `Monitor.OnDPIChange` method using
-`Thqby's WebView2`. See section `Monitor.OnDPIChange` below for more details.
+`Thqby's WebView2`. As I was creating the script, I hadn't thought of sharing it in this way (it's a personal project) so it requires a number of dependencies to run. But you can look at the example script file to get an idea of how it works, I included comments. See section `Monitor.OnDPIChange` below for more details.
 ### Directory Test-Interface
 Contains a script I wrote to test `Monitor` so I can verify the functions work as intended after making updates. It also contains one dependency, which is a function that scrapes AHK class scripts and returns the name of each class method, and the method parameters. I'm quite proud of that one so feel free to use it. (It might incorrectly identify single-line fat-arrow function calls (not method definitions) as methods. I can't remember if I fixed that or if I just worked around it.) The testing interface script may not load correctly at the moment. I'll review it at a later time.
 

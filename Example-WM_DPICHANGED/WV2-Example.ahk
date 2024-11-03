@@ -15,8 +15,8 @@ To run this script, you will need to include the following files (which are in t
 #Include Promise.ahk
 #Include ComVar.ahk
 #Include gMenuBarConstructor.ahk
-#Include ..\cJSON.ahk  ; "..\" directs the #Include directive to search in the parent directory
-#Include ..\cArray.ahk
+#Include cJSON.ahk
+#Include cArray.ahk
 #Include ..\cMonitor.ahk
 
 i := Form()
