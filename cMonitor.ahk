@@ -665,8 +665,9 @@ class Monitor {
                             }
                         }
                     } catch
-                        throw Error('Object does not have an ``__Enum`` method', -1)
+                        throw Error('An error occurred when attempting to enumerate the object.`r`nLine: ' A_LineNumber '`r`nFile: ' A_LineFile '`r`nFunction: ' A_ThisFunc, -1)
                 }
+                throw Error('The input object does not have an ``__Enum`` method', -1)
         }
         return Trim(str, delim)
     }
