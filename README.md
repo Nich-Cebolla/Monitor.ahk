@@ -8,13 +8,10 @@ Key details regarding DLL calls were sourced from or pulled directly from the fo
   - Contributors: `@Tigerlily`, `@CloakerSmoker`, `@jNizM`
 - [JSON class](https://github.com/thqby/ahk2_lib/blob/master/JSON.ahk), [ComVar](https://github.com/thqby/ahk2_lib/blob/master/ComVar.ahk), [Promise](https://github.com/thqby/ahk2_lib/blob/master/Promise.ahk), [WebView2](https://github.com/thqby/ahk2_lib/blob/master/WebView2/WebView2.ahk)
   - Author: `Thqby`
-  - I made a couple modifications to `JSON`, and those modifications are necessary for `Monitor`, so
-  `Thqby's` won't be interchangable.
 ---
 
 ## Repository Contents
 ### Root directory
-`cMonitor.ahk` requires `cArray.ahk` and `cJSON.ahk`
 - cMonitor.ahk - The script containing the `Monitor` class.
 ### Directory Example-WM_DPICHANGED
 Contains all files necessary to demonstrate implementing the `Monitor.OnDPIChange` method using
