@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A user form for documenting helpdesk interactions.">
+    <title>Helpdesk Documentation</title>
+    <style>
+	body{
+		font-family: "Trebuchet MS", sans-serif;
+        font-size: 11px;
+		margin-left: 10px;
+		margin-right: 10px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+        background-image: linear-gradient(to right, #1b082f, #2e0a2e);
+	}
+
+    #container-form {
+        display: grid;
+        grid-template-rows: repeat(10, auto);
+        grid-template-columns: auto;
+        text-align: left;
+        background-color: #f1f1f1;
+        color: #000000;
+        padding: 10px;
+        width: 720px;
+    }
+
+    .container-primary, .client-info-row {
+        display: flex; /* row 5 (client info) display is reassigned below */
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    /* Everything (except headers) gets rounded corners */
+    .label-r1, .input-r1, .label-contact-details, .input-contact-details,
+    .label-r3, .label-r3-launch, .input-r3,
+    .input-r5, .label-r5, button, .div-r3,
+    .div-r5, .label-r6, #label-contact-list, #contact-list,
+    #container-contact-details div label {
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+
+    /* Most elements get margin-bottom */
+    .label-r1, .input-r1, .input-contact-details,
+    .input-r5, .label-r5, .label-r6 {
+        margin-bottom: 5px;
+    }
+
+    /* All elements not associated with radios and checkboxes (which inherit style from the jQuery theme) */
+    .label-r1, .input-r1, .label-r3, .label-r3-launch,
+    .input-r3, .input-r5, .label-r5, .div-r3, .div-r5,
+    #import-client-info, .label-r6 {
+        font-size: 1.2em;
+        max-width: 130px;
+        border: 1px solid #aed0ea;
+    }
+
+    /* Buttons, labels not associated with radios and checkboxes */
+    .label-r1, .label-r3, .label-r3-launch, .label-r5, .div-r3,
+    .div-r5, button, .label-r6 {
+		cursor: pointer;
+        margin-right: 1px;
+        color: #2779aa;
+        background: #e4f1fb 50% 50% repeat-x;
+        font-weight: bold;
+        padding: 6px;
+    }
+
+    /* Icons */
+    .container-launch {
+		margin: 0;
+		padding: 0;
+        margin-right: 10px;
+	}
+	.container-launch li {
+		margin: 2px;
+		position: relative;
+		padding: 4px 0;
+		cursor: pointer;
+		float: left;
+		list-style: none;
+	}
+	.container-launch span.ui-icon {
+		float: left;
+		margin: 0 4px;
+	}
+
+    /* Headers individual styles */
+    .headers {
+        font-size: 1.5em;
+        color: #2779aa;
+        margin-left: 50px;
+    }
+
+    /* Row 1 individual styles */
+    .input-r1 {
+        margin-right: 10px;
+    }
+    #date {
+        width: 100px;
+        padding: 6px;
+    }
+    #start, #end {
+        padding: 4px;
+    }
+
+    /* Row 3 (phone, email) individual styles */
+    .input-r3 {
+        padding-left: 6px;
+    }
+    #phone {
+        max-width: 100px;
+        width: 100px;
+        margin-right: 1px;
+    }
+    #email {
+        max-width: 268px;
+        width: 268px;
+        margin-right: 1px;
+    }
+
+    /* Row 4 (client info header) individual styles */
+    #import-client-info {
+        font-size: 1em;
+        margin-top: 9px;
+        margin-left: 25px;
+        height: 27px;
+        border: 1px solid #8ba9c0;
+    }
+
+    /* Row 5 (client info) individual styles */
+    #container-client-info {
+        display: grid;
+        grid-template-rows: auto auto auto auto;
+    }
+    #ci-r4 {
+        display: grid;
+        grid-template-columns: 45% 55%;
+    }
+    #ci-r4-c1 {
+        display: grid;
+        grid-template-rows: auto auto auto;
+    }
+    #ci-r4-c2, #ci-r4-c1-r1, #ci-r4-c1-r2 {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    /* remove margin-bottom from #employee and associated elements */
+    #employee, #label-r5-employee, #key-employee, #icons-employee {
+        margin-bottom: 0px;
+    }
+    .input-r5 {
+        padding: 6px;
+        overflow-x: scroll;
+        white-space: nowrap;
+        margin-right: 10px; /* cell, secondary-phone, and client-email are reassigned */
+    }
+    .div-r5 {
+        margin-bottom: 0px;
+        margin-right: 0px;
+        max-height: 15px;
+    }
+    #client-id {
+        width: 50px;
+    }
+    #dob {
+        width: 70px;
+    }
+    #status {
+        width: 50px;
+    }
+    #program, #employee {
+        font-size: 0.9em;
+        width: 100px;
+        height: 15px;
+    }
+    #employee {
+        margin-right: 0px;
+    }
+    #first-name, #last-name {
+        max-width: 172px;
+        width: 172px;
+    }
+    #cell-phone, #secondary-phone {
+        width: 80px;
+        margin-right: 1px;
+    }
+    #client-email {
+        max-width: 290px;
+        width: 290px;
+        margin-right: 1px;
+    }
+    #warnings {
+        font-size: 1.0em;
+        border: 1px solid #aed0ea;
+    }
+    #warnings h2 {
+        color: #2779aa;
+        text-align: center;
+        font-size: 1.0em;
+        margin: 0px;
+        margin-top: 2px;
+    }
+    #warnings-content {
+        margin: 3px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 50px;
+        width: 350px;
+    }
+
+    /* Row 6 (narrative) individual styles */
+    #container-notes {
+        display: grid;
+        grid-template-rows: auto auto;
+    }
+    #label-narrative, #label-email-note {
+        height: 15px;
+        margin-right: 10px;
+    }
+    #narrative, #email-note {
+        border: 1px solid #aed0ea;
+    }
+    #email-note, #label-email-note {
+        margin-top: 10px;
+    }
+    #email-note {
+        margin-left: 23px;
+    }
+
+    /* Contact type individual styles */
+    #container-contact-details {
+        display: grid;
+        grid-template-rows: repeat(6, auto);
+    }
+    #container-contact-details div {
+        padding-left: 10px;
+    }
+    .radio-contact-details, .label-contact-details {
+        font-size: 1em;
+    }
+    #cd-r1 {
+        margin-top: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background-color: #c6daea;
+    }
+    #cd-r2, #cd-r4 {
+        padding-top: 10px;
+    }
+    #cd-r3, #cd-r6 {
+        padding-bottom: 10px;
+    }
+    #cd-r2, #cd-r4, #cd-r5 {
+        padding-bottom: 2px;
+    }
+    #cd-r2, #cd-r3 {
+        background-color: #dceaed;
+    }
+    #cd-r4, #cd-r5, #cd-r6 {
+        background-color: #c6daea;
+    }
+    #contact-list {
+        border: 1px solid #aed0ea;
+        padding: 3px;
+        padding-left: 6px;
+        margin-bottom: 0px;
+    }
+    #label-contact-list {
+		cursor: pointer;
+        color: #2779aa;
+        background: #e4f1fb 50% 50% repeat-x;
+        font-weight: bold;
+        padding: 5px;
+        border: 1px solid #aed0ea;
+    }
+
+    </style>
+</head>
+<body>
+    <form id="userform" action="#">
+        <div id="container-form">
+            <div id="container-datetime" class="container-primary">
+                <label for="date" class="label-r1">[Alt D] Date:</label>
+                <input type="text" name="date" id="date" class="input-r1">
+                <label for="start" class="label-r1">[Alt S] Start Time:</label>
+                <input type="time" name="start" id="start" class="input-r1">
+                <label for="end" class="label-r1">[Alt F] End Time:</label>
+                <input type="time" name="end" id="end" class="input-r1">
+            </div>
+            <div id="container-contact-info" class="container-primary">
+                <label for="phone" class="label-r3">Phone:</label>
+                <input type="text" name="phone" id="phone" class="input-r3">
+                <div class="div-r3">[Alt C]</div>
+                <ul id="icons-phone" class="container-launch">
+                    <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                        <span id="launch-phone" class="ui-icon ui-icon-extlink"></span>
+                    </li>
+                </ul>
+                <label for="email" class="label-r3" id="label-r3-email">Email:</label>
+                <input type="text" name="email" id="email" class="input-r3">
+                <div class="div-r3">[Alt E]</div>
+                <ul id="icons-email" class="container-launch">
+                    <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                        <span id="launch-email" class="ui-icon ui-icon-extlink"></span>
+                    </li>
+                </ul>
+            </div>
+            <div id="container-hdr-client-info" class="container-primary">
+                <h2 id="hdr-client-info" class="headers">Client Information</h1>
+                <button type="button" id="import-client-info">[Alt 1] Import</button>
+            </div>
+            <div id="container-client-info" class="container-primary">
+                <div id="ci-r1" class="client-info-row">
+                    <label for="client-id" class="label-r5" id="label-r5-client-id">Client ID:</label>
+                    <input type="text" name="client-id" id="client-id" class="input-r5">
+                    <label for="status" class="label-r5" id="label-r5-status">Status:</label>
+                    <input type="text" name="status" id="status" class="input-r5">
+                    <label for="program" class="label-r5" id="label-r5-program">Program:</label>
+                    <input type="text" name="program" id="program" class="input-r5">
+                    <label for="dob" class="label-r5" id="label-r5-dob">DOB:</label>
+                    <input type="text" name="dob" id="dob" class="input-r5">
+                </div>
+                <div id="ci-r2" class="client-info-row">
+                    <label for="first-name" class="label-r5" id="label-r5-first-name">First Name:</label>
+                    <input type="text" name="first-name" id="first-name" class="input-r5">
+                    <label for="last-name" class="label-r5" id="label-r5-last-name">Last Name:</label>
+                    <input type="text" name="last-name" id="last-name" class="input-r5">
+                </div>
+                <div id="ci-r3" class="client-info-row">
+                    <label for="client-email" class="label-r5" id="label-r5-email">Email:</label>
+                    <input type="text" name="client-email" id="client-email" class="input-r5">
+                    <div id="key-client-email" class="div-r5">[Alt Shift E]</div>
+                    <ul id="icons-client-email" class="container-launch">
+                        <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                            <span id="launch-client-email" class="ui-icon ui-icon-extlink"></span>
+                        </li>
+                    </ul>
+                </div>
+                <div id="ci-r4" class="client-info-row">
+                    <div id="ci-r4-c1" class="client-info-row">
+                        <div id="ci-r4-c1-r1" class="client-info-row">
+                            <label for="cell-phone" class="label-r5" id="label-r5-cell-phone">Cell:</label>
+                            <input type="text" name="cell-phone" id="cell-phone" class="input-r5">
+                            <div id="key-cell" class="div-r5">[Alt Shift C]</div>
+                            <ul id="icons-cell" class="container-launch">
+                                <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                                    <span id="launch-cell" class="ui-icon ui-icon-extlink"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="ci-r4-c1-r2" class="client-info-row">
+                            <label for="secondary-phone" class="label-r5" id="label-r5-secondary-phone">Sec.:</label>
+                            <input type="text" name="secondary-phone" id="secondary-phone" class="input-r5">
+                            <div id="key-secondary" class="div-r5">[Alt Ctrl C]</div>
+                            <ul id="icons-secondary" class="container-launch">
+                                <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                                    <span id="launch-secondary" class="ui-icon ui-icon-extlink"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="ci-r4-c1-r3" class="client-info-row">
+                            <label for="employee" class="label-r5" id="label-r5-employee">Employee:</label>
+                            <input type="text" name="employee" id="employee" class="input-r5">
+                            <div id="key-employee" class="div-r5">[Alt Ctrl E]</div>
+                            <ul id="icons-employee" class="container-launch">
+                                <li class="ui-state-default ui-corner-all" title=".ui-icon-extlink">
+                                    <span id="launch-employee" class="ui-icon ui-icon-extlink"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="ci-r4-c2" class="client-info-row">
+                        <section id="warnings">
+                            <h2>Warnings</h2>
+                            <p id="warnings-content">N/A</p>
+                        </section>
+                    </div>
+                </div>
+            </div>
+            <div id="container-hdr-notes" class="container-primary">
+                <h2 id="hdr-notes" class="headers">Documentation</h1>
+            </div>
+            <div id="container-notes">
+                <div id="container-narrative" class="container-primary">
+                    <label for="narrative" id="label-narrative" class="label-r6">Narrative:</label>
+                    <textarea name="narrative" id="narrative" rows="4" cols="80"></textarea>
+                </div>
+                <div id="container-email-note" class="container-primary">
+                    <label for="email-note" id="label-email-note" class="label-r6">Email:</label>
+                    <textarea name="email-note" id="email-note" rows="4" cols="80"></textarea>
+                </div>
+                <div id="container-contact-details">
+                    <div id="cd-r1" class="radioset">
+                        <input type="radio" id="inbound" name="radio" class="radio-contact-details">
+                        <label for="inbound" class="label-contact-details">[Alt Shift 1] Inbound</label>
+                        <input type="radio" id="outbound" name="radio" class="radio-contact-details">
+                        <label for="outbound" class="label-contact-details">[Alt Shift 2] Outbound</label>
+                        <input type="radio" id="email-only" name="radio" class="radio-contact-details">
+                        <label for="email-only" class="label-contact-details">[Alt Shift 3] Email Only</label>
+                        <input type="radio" id="met-with" name="radio" class="radio-contact-details">
+                        <label for="met-with" class="label-contact-details">[Alt Shift 4] Met With</label>
+                    </div>
+                    <div id="cd-r2" class="radioset">
+                        <input type="radio" id="participant" name="radio" class="radio-contact-details" checked="checked">
+                        <label for="participant" class="label-contact-details">Participant</label>
+                        <input type="radio" id="case-manager" name="radio" class="radio-contact-details">
+                        <label for="case-manager" class="label-contact-details">Family Member</label>
+                        <input type="radio" id="clinical" name="radio" class="radio-contact-details">
+                        <label for="clinical" class="label-contact-details">Clinical Coordinator/Supervisor</label>
+                        <input type="radio" id="community-resource" name="radio" class="radio-contact-details">
+                        <label for="community-resource" class="label-contact-details">Community Resource</label>
+                    </div>
+                    <div id="cd-r3" class="radioset">
+                        <input type="radio" id="company-staff" name="radio" class="radio-contact-details">
+                        <label for="company-staff" class="label-contact-details">company Staff (list)</label>
+                        <input type="radio" id="other" name="radio" class="radio-contact-details">
+                        <label for="other" class="label-contact-details">Other (list)</label>
+                        <input type="radio" id="inpatient-doctor" name="radio" class="radio-contact-details">
+                        <label for="inpatient-doctor" class="label-contact-details">Family Member</label>
+                        <label for="contact-list" id="label-contact-list">List:</label>
+                        <input type="text" name="contact-list" id="contact-list">
+                    </div>
+                    <div id="cd-r4" class="radioset">
+                        <label for="barracuda" id="label-barracuda">Barracuda</label>
+                        <input type="radio" name="barracuda" id="barracuda">
+                        <label for="cell-phone-request" id="label-cell-phone-request">Cell Phone Request</label>
+                        <input type="radio" name="cell-phone-request" id="cell-phone-request">
+                        <label for="client-portal" id="label-client-portal">Client Portal</label>
+                        <input type="radio" name="client-portal" id="client-portal">
+                        <label for="left-in-lobby" id="label-left-in-lobby">Left in lobby</label>
+                        <input type="radio" name="left-in-lobby" id="left-in-lobby">
+                        <label for="incorrect-link" id="label-incorrect-link">Incorrect link</label>
+                        <input type="radio" name="incorrect-link" id="incorrect-link">
+                    </div>
+                    <div id="cd-r5" class="radioset">
+                        <label for="dropped-from-group" id="label-dropped-from-group">Dropped from group</label>
+                        <input type="radio" name="dropped-from-group" id="dropped-from-group">
+                        <label for="company-cell-phones" id="label-company-cell-phones">company Cell phones</label>
+                        <input type="radio" name="company-cell-phones" id="company-cell-phones">
+                        <label for="non-technical-issue" id="label-non-technical-issue">Non-Technical Issue</label>
+                        <input type="radio" name="non-technical-issue" id="non-technical-issue">
+                        <label for="group-not-started" id="label-group-not-started">Group not started</label>
+                        <input type="radio" name="group-not-started" id="group-not-started">
+                    </div>
+                    <div id="cd-r6" class="radioset">
+                        <label for="teams-link" id="label-teams-link">Teams Link</label>
+                        <input type="radio" name="teams-link" id="teams-link">
+                        <label for="practice-meeting" id="label-practice-meeting">Practice Meeting</label>
+                        <input type="radio" name="practice-meeting" id="practice-meeting">
+                        <label for="payment-portal" id="label-payment-portal">Payment Portal</label>
+                        <input type="radio" name="payment-portal" id="payment-portal">
+                        <label for="form-dr" id="label-form-dr">Form Dr.</label>
+                        <input type="radio" name="form-dr" id="form-dr">
+                        <label for="teams-technical" id="label-teams-technical">Teams-technical</label>
+                        <input type="radio" name="teams-technical" id="teams-technical">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        // Event listeners for date, start time, end time
+        document.addEventListener('DOMContentLoaded', function () {
+            const labelsR1 = document.querySelectorAll('.label-r1');
+            const textR1 = document.querySelectorAll('.input-r1');
+            for (const label of labelsR1) {
+                if (label.htmlFor) {
+                    const input = document.getElementById(label.htmlFor);
+                    if (input) {
+                        if (input.type === 'text') {
+                            label.addEventListener('click', function () {
+                                const now = new Date();
+                                const formattedDate = $.datepicker.formatDate('mm/dd/yy', now);
+                                input.value = formattedDate;
+                            });
+                        } else if (input.type === 'time') {
+                            label.addEventListener('click', function () {
+                                const now = new Date();
+                                const hours = now.getHours();
+                                const minutes = now.getMinutes();
+                                const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+                                input.value = formattedTime;
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        // Event listeners for phone input
+        const phonePattern = /^\d{0,10}$/;
+        document.getElementById('phone').addEventListener('input', function (event) {
+            const input = event.target;
+            input.value = input.value.replace(/\D/g, '').substring(0, 10);
+        });
+
+        // Eevent listeners for email input
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        document.getElementById('email').addEventListener('input', function (event) {
+            const input = event.target;
+            const val = input.value.trim();
+            input.value = val;
+
+            if (emailPattern.test(val)) {
+                input.style.color = 'black';
+            } else {
+                input.style.color = 'red';
+            }
+        });
+
+        // Event listeners for keyboard shortcuts
+        document.addEventListener('keydown', function (event) {
+
+            function updateRadio(radioId) {
+                event.preventDefault(); // Prevent any default browser action
+                // Update the radio button's state, and update visual state
+                const inboundRadio = document.getElementById(radioId);
+                inboundRadio.checked = true;
+                inboundRadio.focus();
+                inboundRadio.dispatchEvent(new Event('change'));
+            }
+
+            function updateTextValue(inputID) {
+                const input = document.getElementById(inputID);
+                if (input.type === 'text') {
+                    const now = new Date();
+                    const formattedDate = $.datepicker.formatDate('mm/dd/yy', now);
+                    input.value = formattedDate;
+                } else if (input.type === 'time') {
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+                    input.value = formattedTime;
+                }
+            }
+
+            if (event.altKey && event.shiftKey && event.code === 'Digit1') {
+                event.preventDefault();
+                updateRadio('inbound');
+            } else if (event.altKey && event.shiftKey && event.code === 'Digit2') {
+                event.preventDefault();
+                updateRadio('outbound');
+            } else if (event.altKey && event.shiftKey && event.code === 'Digit3') {
+                event.preventDefault();
+                updateRadio('email-only');
+            } else if (event.altKey && event.shiftKey && event.code === 'Digit4') {
+                event.preventDefault();
+                updateRadio('met-with');
+            } else if (event.altKey && event.code === 'KeyD') {
+                event.preventDefault();
+                updateTextValue('date');
+            } else if (event.altKey && event.code === 'KeyS') {
+                event.preventDefault();
+                updateTextValue('start');
+            } else if (event.altKey && event.code === 'KeyF') {
+                event.preventDefault();
+                updateTextValue('end');
+            } else if (event.altKey && event.code === 'KeyC') {
+                event.preventDefault();
+                // Launch phone dialer
+            } else if (event.altKey && event.code === 'KeyE') {
+                event.preventDefault();
+                // Launch email client
+            }
+        });
+
+
+        // Initialize copy function and jQuery UI tooltip on labels
+        $(document).ready(function () {
+
+            function copyToClipboard(input) {
+                navigator.clipboard.writeText(input.value);
+            }
+
+            for (let labelClass of ['.label-r1', '.label-r3', '.label-r5', '.label-r6']) {
+                for (const lbl of document.querySelectorAll(labelClass)) {
+                    lbl.addEventListener('click', function () {
+                        copyToClipboard(document.getElementById(lbl.htmlFor));
+                    });
+                }
+                $(labelClass).tooltip({
+                    show: { effect: 'fadeIn', duration: 200 },
+                    hide: { effect: 'fadeOut', duration: 500 },
+                    position: {
+                        my: 'center top+10',   // Align tooltip above the label
+                        at: 'center bottom',   // Position it based on the label's bottom
+                        collision: 'fit'       // Ensure it stays within the viewport
+                    }
+                });
+            }
+        });
+
+        // Import button event listener
+        $('#import-client-info').click(function () {
+            // Placeholder for importing client info
+            alert('Client info imported');
+        });
+
+    </script>
+</body>
+</html>

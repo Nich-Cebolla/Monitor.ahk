@@ -1,6 +1,6 @@
 #SingleInstance Force
 
-/* 
+/*
 Tested on 2.0.17
 If you run it, I recommend running it in a a temporary directory somewhere. The WebView2 controller will
 create a User Data folder within A_ScriptDir, so it'll just be a bit easier to clean up after if things
@@ -14,10 +14,10 @@ To run this script, you will need to include the following files (which are in t
 #Include WebView2.ahk
 #Include Promise.ahk
 #Include ComVar.ahk
-#Include cJSON.ahk
-#Include cArray.ahk
-#Include cMonitor.ahk
 #Include gMenuBarConstructor.ahk
+#Include ..\cJSON.ahk  ; "..\" directs the #Include directive to search in the parent directory
+#Include ..\cArray.ahk
+#Include ..\cMonitor.ahk
 
 i := Form()
 
@@ -26,7 +26,7 @@ class Form {
         path: {
             dll: 'WebView2Loader.dll'
           , userData: A_ScriptDir
-          , userForm: 'files:///' A_ScriptDir '/index.html'
+          , userForm: 'file:///' A_ScriptDir '/index.html'
         }
       , gui: {
             title: 'Office-Tools.Form'
@@ -122,7 +122,7 @@ class Form {
                 self.g.Destroy()
         }
     }
-    
+
     ; notes to self
     ; callback params: ItemName, ItemPos, MyMenu
     ; selectedfile := FileSelect('S 16', A_ScriptDir '\Log_' FormatTime(A_Now, "yyyyMMdd_HHmmss") '.txt') <- returns a string path
