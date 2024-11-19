@@ -452,15 +452,15 @@ class Monitor {
     static WinMoveByMouse(hwnd, useWorkArea := true, moveImmediately := true, offsetMouse := {x:5,y:5}, offsetEdgeOfMonitor := {x:50,y:50}) {
         mon := Monitor.GetFromMouse(&mX, &mY)[useWorkArea ? 'work' : 'display']
         WinGetPos(&wX, &wY, &wW, &wH, Number(hwnd))
-        if (mX + offsetMouse.x + wW > mon['right'])
+        if (mX + offsetMouse.x + wW > mon['right'] - offsetEdgeOfMonitor.x)
             x := mon['right'] - wW - offsetEdgeOfMonitor.x
-        else if (mX + offsetMouse.x + wW < mon['left'])
+        else if (mX + offsetMouse.x < mon['left'] + offsetEdgeOfMonitor.x)
             x := mon['left'] + offsetEdgeOfMonitor.x
         else
             x := mX + offsetMouse.x
-        if (mY + offsetMouse.y + wH > mon['bottom'])
+        if (mY + offsetMouse.y + wH > mon['bottom'] - offsetEdgeOfMonitor.y)
             y := mon['bottom'] - wH - offsetEdgeOfMonitor.y
-        else if (mY + offsetMouse.y + wH < mon['top'])
+        else if (mY + offsetMouse.y < mon['top'] + offsetEdgeOfMonitor.y)
             y := mon['top'] + offsetEdgeOfMonitor.y
         else
             y := mY + offsetMouse.y
