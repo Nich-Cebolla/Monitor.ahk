@@ -27,7 +27,7 @@ This class provides methods for obtaining information about monitor size, dimens
 - A window's `hwnd`: `Monitor.GetFromWindow`
 - A rectangle (left, top, right, bottom): `Monitor.GetFromRect`
 - Dimensions (x, y, w, h): `Monitor.GetFromDimensions`
-- Current position of the mouse pointer: `Monitor.MouseGetMonitor`
+- Current position of the mouse pointer: `Monitor.GetFromMouse`
 
 ### Identifiers
 When retrieving monitor information, three key identifiers are used:
@@ -259,7 +259,7 @@ Determines the intersection of two rectangles.
 ### Returns
 - *(Object)*: The intersection as a rectangle, retrieved using `Monitor.DataTypes.RectGet(rect)`.
 
-## Monitor.MouseGetMonitor Method
+## Monitor.GetFromMouse Method
 
 ### Description
 Gets the `Monitor.Unit` object based on the current position of the mouse pointer at the time the function is called.
@@ -385,6 +385,12 @@ A helper function to reposition a window based on the current position of the mo
   - `'y'`: New y-coordinate for the window.
 
 ---
+
+## Changelog
+  -2024-11-18
+    1. Corrected `Monitor.WinMoveByMouse` calculation logic
+    2. ]Renamed `Monitor.MouseGetMon` to `Monitor.GetFromMouse` to be consistent with the other methods
+
 
 ## Additional References
 
