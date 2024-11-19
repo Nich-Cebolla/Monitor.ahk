@@ -15,7 +15,7 @@ https://www.autohotkey.com/boards/viewtopic.php?f=83&t=79220
  * - a window's hwnd {@link Monitor.GetFromWindow}
  * - a rectangle (left, top, right, bottom) {@link Monitor.GetFromRect}
  * - dimensions (x, y, w, h) {@link Monitor.GetFromDimensions}
- * - the current position of the mouse pointer {@link Monitor.MouseGetMonitor}
+ * - the current position of the mouse pointer {@link Monitor.GetFromMouse}
  *
  * When retrieving information about a monitor, there are three numbers you can use.
  * - The "HMON" ("hmon") which is the monitor's handle (similar to HWND).
@@ -275,6 +275,17 @@ class Monitor {
      */
     static GetFromDimensions(x, y, w, h) => Monitor.GetFromRect(x, y, x+w, y+h)
 
+    /** ### Description - Monitor.GetFromMouse()
+     * Gets the monitor object using the position of the mouse pointer (at the time the function is called).
+     * @param {VarRef} [mouseX] - the variable to store the x-coordinate of the mouse pointer
+     * @param {VarRef} [mouseY] - the variable to store the y-coordinate of the mouse pointer
+     * @returns {Object} - the `Monitor.Unit` object
+     */
+    static GetFromMouse(&mouseX?, &mouseY?) {
+        DllCall("User32.dll\GetCursorPos", "Ptr", PT := Buffer(A_PtrSize))
+        return Monitor.GetFromPoint(mouseX := NumGet(PT, 'Int'), mouseY := NumGet(PT, 4, 'Int'))
+    }
+
     /** ### Description - Monitor.GetFromPoint()
      * Gets the monitor object based on the coordinates of a point.
      * @param {Integer} x - the x-coordinate of the point
@@ -307,17 +318,6 @@ class Monitor {
         rect := Buffer(16, 0)
         if DLLCall('User32.dll\IntersectRect', 'Ptr', rect, 'Ptr', r1, 'Ptr', r2)
             return Monitor.DataTypes.RectGet(rect)
-    }
-
-    /** ### Description - Monitor.MouseGetMonitor()
-     * Gets the monitor object using the position of the mouse pointer (at the time the function is called).
-     * @param {VarRef} [mouseX] - the variable to store the x-coordinate of the mouse pointer
-     * @param {VarRef} [mouseY] - the variable to store the y-coordinate of the mouse pointer
-     * @returns {Object} - the `Monitor.Unit` object
-     */
-    static MouseGetMonitor(&mouseX?, &mouseY?) {
-        DllCall("User32.dll\GetCursorPos", "Ptr", PT := Buffer(A_PtrSize))
-        return Monitor.GetFromPoint(mouseX := NumGet(PT, 'Int'), mouseY := NumGet(PT, 4, 'Int'))
     }
 
     /** ### Description - Monitor.OnDPIChange()
@@ -450,10 +450,20 @@ class Monitor {
      * @returns {Map} - a map object with the new x and y coordinates as `Map('x', <new x>, 'y', <new y>)`
      */
     static WinMoveByMouse(hwnd, useWorkArea := true, moveImmediately := true, offsetMouse := {x:5,y:5}, offsetEdgeOfMonitor := {x:50,y:50}) {
-        mon := Monitor.MouseGetMonitor(&mX, &mY)[useWorkArea ? 'work' : 'display']
+        mon := Monitor.GetFromMouse(&mX, &mY)[useWorkArea ? 'work' : 'display']
         WinGetPos(&wX, &wY, &wW, &wH, Number(hwnd))
-        x := (mX + wW + offsetMouse.x > mon['right'] - offsetEdgeOfMonitor.x ? mon['right'] - wW - offsetEdgeOfMonitor.x : mX + offsetMouse.x)
-        y := (mY + wH + offsetMouse.Y > mon['bottom'] - offsetEdgeOfMonitor.Y ? mon['bottom'] - wH - offsetEdgeOfMonitor.Y : mY + offsetMouse.Y)
+        if (mX + offsetMouse.x + wW > mon['right'])
+            x := mon['right'] - wW - offsetEdgeOfMonitor.x
+        else if (mX + offsetMouse.x + wW < mon['left'])
+            x := mon['left'] + offsetEdgeOfMonitor.x
+        else
+            x := mX + offsetMouse.x
+        if (mY + offsetMouse.y + wH > mon['bottom'])
+            y := mon['bottom'] - wH - offsetEdgeOfMonitor.y
+        else if (mY + offsetMouse.y + wH < mon['top'])
+            y := mon['top'] + offsetEdgeOfMonitor.y
+        else
+            y := mY + offsetMouse.y
         if moveImmediately
             WinMove(x, y, , , Number(hwnd))
         return Map('x', x, 'y', y)
@@ -699,86 +709,3 @@ class Monitor {
     }
 }
 
-
-/* In progress, need to find a better way
-
-    static GetUnusedDisplayArea(hmon, winList, useWorkArea := true) {
-        mon := Monitor[hmon], area := mon[useWorkArea ? 'work' : 'display'], occupied := [], largest := Map('area', 0), remainingRects := []
-        monRect := Monitor.DataTypes.Rect(mon['display']['left'], mon['display']['top'], mon['display']['right'], mon['display']['bottom'])
-
-        ; Loop through the windows, collecting the areas of intersection, and also identifying the largest area of intersection
-        for hwnd in winList {
-            minMax := WinGetMinMax(hwnd)
-            if minMax = -1
-                continue
-            if minMax = 1
-                return 0
-            WinGetPos(&x, &y, &w, &h, hwnd)
-            winRect := Monitor.DataTypes.Rect(x, y, x+w, y+h)
-            if result := Monitor.IntersectRect(monRect, winRect) {
-                obj := Map('area', (result['right']-result['left'])*(result['bottom']-result['top']), 'rect', result, 'winRect', winRect, 'hwnd', hwnd, 'index', occupied.length + 1)
-                if obj['area'] > largest['area']
-                    largest := obj
-                occupied.Push(obj)
-            }
-        }
-
-        ; If no windows intersected with the monitor's display area, return 1
-        if !occupied.length
-            return 1
-
-        ; Create up to four rectangles that represent the remaining area of the monitor after the largest intersection is removed
-        leftRect := (largest['rect']['left'] > area['left'] ? Map('left', area['left'], 'top', area['top'], 'right', largest['rect']['left'], 'bottom', area['bottom']) : 0)
-        if leftRect
-            remainingRects.Push(leftRect)
-        topRect := (largest['rect']['top'] > area['top'] ? Map('left', (leftRect ? largest['rect']['left'] : area['left']), 'top', area['top'], 'right', area['right'], 'bottom', largest['rect']['top']) : 0)
-        if topRect
-            remainingRects.Push(topRect)
-        rightRect := (largest['rect']['right'] < area['right'] ? Map('left', largest['rect']['right'], 'top', (topRect ? largest['rect']['top'] : area['top']), 'right', area['right'], 'bottom', area['bottom']) : 0)
-        if rightRect
-            remainingRects.Push(rightRect)
-        bottomRect := (largest['rect']['bottom'] < area['bottom'] ? Map('left', area['left'], 'top', largest['rect']['bottom'], 'right', area['right'], 'bottom', area['bottom']) : 0)
-        if bottomRect
-            remainingRects.Push(bottomRect)
-
-        ; If the largest intersection is the same size as the monitor's display area, return 0
-        if !remainingRects.length
-            return 0
-
-        ; Loop through the previous result objects, and the remaining rectangles, and process those intersections
-        resultContainer := []
-        for obj in occupied {
-            if !obj
-                continue
-            flag_intersected := false
-            for remainder in remainingRects {
-                if result := Monitor.IntersectRect(Monitor.DataTypes.Rect(remainder['left'], remainder['top'], remainder['right'], remainder['bottom']), obj['winRect']) {
-                    flag_intersected := true
-                    ; If the intersection is the same size as the window, remove the window from the remaining list
-                    if (result['left'] = remainder['left'] && result['top'] = remainder['top'] && result['right'] = remainder['right'] && result['bottom'] = remainder['bottom'])
-                        remainingRects.RemoveAt(A_Index)
-                    else
-                        resultContainer.Push(Map('remainder', remainder, 'result', result))
-                }
-            }
-            ; If the window did not intersect with any of the remaining rectangles, remove it from the occupied list
-            if !flag_intersected
-                occupied[obj['index']] := 0
-        }
-        ; Create a new occupied list
-        tempOccupied := []
-        for obj in occupied {
-            if obj
-                tempOccupied.Push(obj)
-        }
-        occupied := tempOccupied
-
-        ; Loop through the result container
-        for item in resultContainer {
-            remainder := item['remainder']
-            item.Set('rangeX', remainder['left'] ':' remainder['right'], 'rangeY', remainder['top'] ':' remainder['bottom'])
-        }
-
-        sleep 1
-
-    }
